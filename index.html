@@ -1929,10 +1929,28 @@
   if (savedNick) msgNickname.value = savedNick;
   msgNickname.addEventListener('change', () => {
     localStorage.setItem('love_msg_nickname', msgNickname.value.trim());
+    trackVisit(msgNickname.value.trim());
   });
   msgNickname.addEventListener('blur', () => {
     localStorage.setItem('love_msg_nickname', msgNickname.value.trim());
+    trackVisit(msgNickname.value.trim());
   });
+
+  // ── Visit tracking (every page load) ──
+  function trackVisit(nick) {
+    if (!supabase || !nick) return;
+    supabase.from('love_visits').insert([{ nickname: nick }]).then(() => {});
+  }
+
+  // Auto-track on page load
+  if (supabase) {
+    const autoNick = savedNick || '访客';
+    trackVisit(autoNick);
+    // Update from 访客 to real name once nickname is set
+    if (!savedNick) {
+      msgNickname.addEventListener('change', () => { trackVisit(msgNickname.value.trim()); }, { once: true });
+    }
+  }
 
   function createMsgEl(msg) {
     const isMine = msgNickname.value.trim() && msgNickname.value.trim() === msg.sender;

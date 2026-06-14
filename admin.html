@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔍 访问记录 - 小时光</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=ZCOOL+KuaiLe&display=swap');
+  :root {
+    --bg-from: #fdf2f4; --bg-via: #faf0f4; --bg-to: #f5edf2;
+    --card-bg: rgba(255,255,255,0.62); --accent: #cc7a8c; --accent-deep: #a85e70;
+    --text: #4a3540; --text-soft: #8c7380; --radius: 24px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height:100vh;
+    background:linear-gradient(170deg, var(--bg-from) 0%, var(--bg-via) 40%, var(--bg-to) 100%);
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:40px 0 60px; font-family:'Noto Sans SC',sans-serif;
+  }
+  .card {
+    background:var(--card-bg); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    border-radius:var(--radius); padding:32px 30px 28px; max-width:500px; width:92%;
+    box-shadow:0 8px 32px rgba(160,120,135,0.12); border:1px solid rgba(255,255,255,0.7);
+  }
+  .header {
+    text-align:center; margin-bottom:20px;
+  }
+  .header .icon { font-size:36px; }
+  .header .title {
+    font-family:'ZCOOL KuaiLe',cursive; font-size:24px; color:var(--text);
+    letter-spacing:2px; margin-top:4px;
+  }
+  .refresh-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:18px; font-size:12px; color:var(--text-soft);
+  }
+  .refresh-btn {
+    padding:6px 16px; border-radius:14px; border:1px solid rgba(204,122,140,0.2);
+    background:rgba(255,255,255,0.5); color:var(--accent-deep);
+    font-size:12px; cursor:pointer; font-family:inherit;
+    transition:all 0.2s;
+  }
+  .refresh-btn:hover { background:rgba(204,122,140,0.1); }
+  .stats { display:flex; gap:10px; margin-bottom:20px; }
+  .stat-box {
+    flex:1; text-align:center; padding:14px 10px;
+    background:rgba(255,255,255,0.4); border-radius:14px;
+    border:1px solid rgba(255,255,255,0.5);
+  }
+  .stat-box .num {
+    font-size:36px; font-weight:700;
+    background:linear-gradient(135deg, var(--accent), var(--accent-deep));
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+  }
+  .stat-box .lbl { font-size:11px; color:var(--text-soft); margin-top:2px; }
+  .visit-list { max-height:420px; overflow-y:auto; }
+  .visit-list::-webkit-scrollbar { width:4px; }
+  .visit-list::-webkit-scrollbar-thumb { background:rgba(204,122,140,0.2); border-radius:2px; }
+  .visit-item {
+    display:flex; align-items:center; gap:12px;
+    padding:10px 14px; margin-bottom:6px;
+    background:rgba(255,255,255,0.4); border-radius:12px;
+    border:1px solid rgba(255,255,255,0.5);
+    font-size:13px;
+  }
+  .visit-item .avatar {
+    width:32px; height:32px; border-radius:50%;
+    background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:600; flex-shrink:0;
+  }
+  .visit-item .info { flex:1; }
+  .visit-item .name { color:var(--text); font-weight:500; }
+  .visit-item .time { color:var(--text-soft); font-size:11px; margin-top:2px; }
+  .loading { text-align:center; padding:30px; color:var(--text-soft); }
+  .back-link {
+    display:block; text-align:center; margin-top:16px;
+    color:var(--accent); font-size:14px; text-decoration:none;
+  }
+  .back-link:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="header">
+    <div class="icon">🔍</div>
+    <div class="title">访问记录</div>
+  </div>
+
+  <div class="refresh-bar">
+    <span id="refreshTime">加载中...</span>
+    <button class="refresh-btn" onclick="loadVisits()">🔄 刷新</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="num" id="totalVisits">0</div>
+      <div class="lbl">总访问次数</div>
+    </div>
+    <div class="stat-box">
+      <div class="num" id="todayVisits">0</div>
+      <div class="lbl">今日访问</div>
+    </div>
+    <div class="stat-box">
+      <div class="num" id="uniqueVisitors">0</div>
+      <div class="lbl">独立访客</div>
+    </div>
+  </div>
+
+  <div class="visit-list" id="visitList">
+    <div class="loading">⏳ 加载中...</div>
+  </div>
+</div>
+
+<a class="back-link" href="index.html">← 回到小时光</a>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+(function() {
+  const SUPABASE_URL = 'https://lhbcechwactdqcyhnkgp.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoYmNlY2h3YWN0ZHFjeWhua2dwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTI1OTksImV4cCI6MjA5Njk2ODU5OX0.pAI86r8e0V9YqK6adY1tiJ-JFKDB0FAiK-TkMW2agC8';
+
+  let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const visitList = document.getElementById('visitList');
+  const totalVisits = document.getElementById('totalVisits');
+  const todayVisits = document.getElementById('todayVisits');
+  const uniqueVisitors = document.getElementById('uniqueVisitors');
+  const refreshTime = document.getElementById('refreshTime');
+
+  function timeAgo(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const sec = Math.floor(diff/1000);
+    if (sec<60) return '刚刚';
+    const min = Math.floor(sec/60);
+    if (min<60) return min+'分钟前';
+    const hr = Math.floor(min/60);
+    if (hr<24) return hr+'小时前';
+    const day = Math.floor(hr/24);
+    return day+'天前';
+  }
+
+  function avatarChar(name) {
+    return name.charAt(0).toUpperCase();
+  }
+
+  async function loadVisits() {
+    const { data, error } = await supabase
+      .from('love_visits')
+      .select('*')
+      .order('visited_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      visitList.innerHTML = '<div class="loading">😢 加载失败，请刷新</div>';
+      return;
+    }
+
+    const visits = data || [];
+    totalVisits.textContent = visits.length >= 50 ? '50+' : visits.length;
+
+    // Today's visits
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = visits.filter(v => v.visited_at.startsWith(today)).length;
+    todayVisits.textContent = todayCount;
+
+    // Unique visitors
+    const unique = new Set(visits.map(v => v.nickname)).size;
+    uniqueVisitors.textContent = unique;
+
+    // Render list
+    visitList.innerHTML = visits.map(v => `
+      <div class="visit-item">
+        <div class="avatar">${avatarChar(v.nickname)}</div>
+        <div class="info">
+          <div class="name">${escapeHtml(v.nickname)}</div>
+          <div class="time">${timeAgo(v.visited_at)}</div>
+        </div>
+      </div>
+    `).join('');
+
+    refreshTime.textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
+  }
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  loadVisits();
+})();
+</script>
+
+</body>
+</html>
