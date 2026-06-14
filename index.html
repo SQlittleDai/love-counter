@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>💕 我们的时光</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#fdf2f4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="小时光">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg-from: #fdf2f4;
+    --bg-via: #faf0f4;
+    --bg-to:   #f5edf2;
+    --card-bg: rgba(255,255,255,0.62);
+    --card-border: rgba(255,255,255,0.7);
+    --accent:      #cc7a8c;
+    --accent-soft: #e4bcc6;
+    --accent-deep: #a85e70;
+    --text:        #4a3540;
+    --text-soft:   #8c7380;
+    --text-muted:  #b09aa5;
+    --shadow-sm:   0 1px 3px rgba(160,120,135,0.06);
+    --shadow-md:   0 4px 20px rgba(160,120,135,0.08), 0 0 0 0.5px rgba(160,120,135,0.04);
+    --shadow-lg:   0 8px 32px rgba(160,120,135,0.12), 0 0 1px rgba(160,120,135,0.05);
+    --radius: 24px;
+    --font-cute: 'ZCOOL KuaiLe', cursive;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(170deg, var(--bg-from) 0%, var(--bg-via) 40%, var(--bg-to) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    font-family: 'Noto Sans SC', sans-serif;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── Floating hearts ── */
+  .hearts-container {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  }
+  .floating-heart {
+    position: absolute;
+    font-size: 24px;
+    animation: floatUp var(--dur) linear infinite;
+    animation-delay: var(--delay);
+    left: var(--x);
+    opacity: 0.6;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(105vh) rotate(0deg) scale(0.5); opacity: 0; }
+    10% { opacity: 0.7; }
+    50% { opacity: 0.6; transform: scale(1) rotate(180deg); }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-10vh) rotate(360deg) scale(0.3); opacity: 0; }
+  }
+
+  /* ── Floating petals ── */
+  .petal {
+    position: absolute;
+    width: 14px; height: 18px;
+    background: radial-gradient(ellipse at 30% 30%, #e8c8d2, #cc8a9c);
+    border-radius: 50% 0 50% 50%;
+    animation: petalFall var(--dur) linear infinite;
+    animation-delay: var(--delay);
+    left: var(--x);
+    opacity: 0.7;
+  }
+  @keyframes petalFall {
+    0% { transform: translateY(-5vh) rotate(0deg) translateX(0); opacity: 0.8; }
+    25% { transform: translateY(25vh) rotate(90deg) translateX(30px); }
+    50% { transform: translateY(50vh) rotate(180deg) translateX(-20px); }
+    75% { transform: translateY(75vh) rotate(270deg) translateX(15px); }
+    100% { transform: translateY(105vh) rotate(360deg) translateX(-10px); opacity: 0; }
+  }
+
+  /* ── Card base ── */
+  .card {
+    position: relative; z-index: 1;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: var(--radius);
+    padding: 40px 36px 36px;
+    max-width: 440px; width: 92%;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    border: 1px solid var(--card-border);
+    /* Tab switching */
+    display: none;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+  .card.active {
+    display: block;
+    opacity: 1; transform: translateY(0);
+  }
+
+  /* ── Bear ── */
+  .bear {
+    font-size: 62px;
+    margin-bottom: 4px;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-12px); }
+    50% { transform: translateY(0); }
+    70% { transform: translateY(-6px); }
+  }
+
+  .title {
+    font-family: var(--font-cute);
+    font-size: 24px; color: var(--text);
+    margin-bottom: 2px; letter-spacing: 1.5px;
+    font-weight: 400;
+  }
+  .subtitle {
+    font-size: 13px; color: var(--text-soft);
+    margin-bottom: 6px; font-weight: 300;
+  }
+
+  .name-display {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 34px; font-weight: 700;
+    margin: 6px 0 16px; letter-spacing: 3px;
+    position: relative;
+  }
+  .name-display::after {
+    content: '🌸'; position: absolute;
+    right: -34px; top: -2px; font-size: 20px;
+    -webkit-text-fill-color: initial;
+    animation: sway 3s ease-in-out infinite;
+  }
+  @keyframes sway {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+  }
+
+  .divider {
+    width: 48px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
+    margin: 0 auto 20px; border-radius: 1px;
+  }
+
+  /* ── Counters ── */
+  .counters {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+  .counter-box {
+    flex: 1; min-width: 160px;
+    background: rgba(255,255,255,0.45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 18px; padding: 18px 14px 16px;
+    border: 1px solid rgba(255,255,255,0.6);
+    transition: transform 0.25s, box-shadow 0.25s;
+    cursor: default;
+  }
+  .counter-box:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+  .counter-box .emoji { font-size: 28px; margin-bottom: 4px; }
+  .counter-box .label {
+    font-size: 12px; color: var(--text-soft); margin-bottom: 4px;
+    font-weight: 400; letter-spacing: 0.5px;
+  }
+  .counter-box .number {
+    font-size: 44px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; line-height: 1;
+  }
+  .counter-box .unit {
+    font-size: 12px; color: var(--text-soft); margin-top: 2px;
+    font-weight: 300;
+  }
+
+  /* ── Progress ── */
+  .progress-section { margin-top: 24px; }
+  .progress-label {
+    font-size: 12px; color: var(--text-soft); margin-bottom: 6px;
+    font-weight: 400;
+  }
+  .progress-bar-outer {
+    height: 6px; background: rgba(204,122,140,0.12);
+    border-radius: 3px; overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent-soft), var(--accent), var(--accent-deep));
+    border-radius: 3px;
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-text {
+    font-size: 11px; color: var(--text-soft); margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* ── Quote ── */
+  .quote {
+    margin-top: 24px; font-size: 13px;
+    color: var(--text-soft); font-weight: 300;
+    font-style: italic; line-height: 1.7;
+  }
+  .quote .sparkle {
+    display: inline-block;
+    animation: sparkle 1.5s ease-in-out infinite;
+  }
+  .quote .sparkle:nth-child(2) { animation-delay: 0.5s; }
+  .quote .sparkle:nth-child(3) { animation-delay: 1s; }
+  @keyframes sparkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 480px) {
+    .card { padding: 28px 18px 24px; }
+    .counter-box { min-width: 130px; padding: 14px 10px 12px; }
+    .number { font-size: 36px; }
+    .msg-bubble { max-width: 88%; }
+    .msg-input-row { flex-direction: column; gap: 8px; }
+    .name-display { font-size: 28px; }
+  }
+
+  /* ══════════════════════════════════════
+     WEATHER CARD
+     ══════════════════════════════════════ */
+
+  .weather-card-header, .period-card-header, .diary-card-header, .msg-card-header {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; margin-bottom: 12px;
+  }
+  .weather-card-header .icon,
+  .period-card-header .icon,
+  .diary-card-header .icon,
+  .msg-card-header .icon { font-size: 24px; }
+  .weather-card-header .title,
+  .period-card-header .title,
+  .msg-card-header .title {
+    font-family: var(--font-cute);
+    font-size: 20px; color: var(--text); letter-spacing: 1.5px; font-weight: 400;
+  }
+  .weather-location {
+    text-align: center; font-size: 12px; color: var(--text-soft);
+    margin-bottom: 14px; font-weight: 300;
+  }
+  .weather-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-bottom: 16px;
+  }
+  .weather-item {
+    background: rgba(255,255,255,0.4);
+    border-radius: 14px; padding: 12px 6px; text-align: center;
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: transform 0.2s;
+  }
+  .weather-item:hover { transform: translateY(-2px); }
+  .weather-item .wi-icon { font-size: 22px; margin-bottom: 3px; }
+  .weather-item .wi-label { font-size: 10px; color: var(--text-soft); font-weight: 400; }
+  .weather-item .wi-value { font-size: 18px; font-weight: 600; color: var(--text); }
+  .weather-item .wi-value.small { font-size: 13px; }
+  .weather-temp-main {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; padding: 16px 8px;
+  }
+  .weather-temp-main .wt-big {
+    font-size: 48px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; line-height: 1;
+  }
+  .weather-temp-main .wt-meta {
+    text-align: left; font-size: 12px; color: var(--text-soft); line-height: 1.7;
+  }
+  .weather-loading {
+    text-align: center; padding: 20px; color: var(--text-soft);
+    font-size: 13px; font-weight: 300;
+  }
+  .weather-loading .big { font-size: 36px; display: block; margin-bottom: 6px; }
+  .weather-error { color: #b85c5c; }
+  .weather-suggestions {
+    border-top: 1px solid rgba(204,122,140,0.12);
+    padding-top: 14px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .suggestion-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 12px; font-size: 12px; color: var(--text);
+    line-height: 1.6; border: 1px solid rgba(255,255,255,0.45);
+  }
+  .suggestion-item .si-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+  .suggestion-item .si-text { flex: 1; }
+  .suggestion-item .si-text strong { color: var(--accent-deep); font-weight: 600; }
+
+  @media (max-width: 480px) {
+    .weather-grid { grid-template-columns: repeat(2, 1fr); }
+    .weather-temp-main .wt-big { font-size: 38px; }
+  }
+
+  /* ══════════════════════════════════════
+     DIARY CALENDAR
+     ══════════════════════════════════════ */
+
+  .diary-card { }
+  .diary-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .diary-card-header .left { display: flex; align-items: center; gap: 6px; }
+  .diary-card-header .title {
+    font-family: var(--font-cute);
+    font-size: 20px; color: var(--text); letter-spacing: 1.5px; font-weight: 400;
+  }
+  .diary-month-nav { display: flex; align-items: center; gap: 4px; }
+  .diary-month-nav .nav-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid rgba(204,122,140,0.18);
+    background: rgba(255,255,255,0.45); color: var(--text-soft);
+    font-size: 14px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .diary-month-nav .nav-btn:hover { background: rgba(204,122,140,0.08); border-color: var(--accent-soft); }
+  .diary-month-nav .month-label { font-size: 14px; font-weight: 500; color: var(--text); min-width: 80px; text-align: center; }
+  .diary-calendar { width: 100%; }
+  .diary-weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    text-align: center; font-size: 10px; font-weight: 500;
+    color: var(--text-muted); margin-bottom: 4px;
+  }
+  .diary-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .diary-day {
+    aspect-ratio: 1; border-radius: 8px; border: 1px solid transparent;
+    background: rgba(255,255,255,0.3); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--text); transition: all 0.2s; position: relative; min-width: 0;
+  }
+  .diary-day:hover { background: rgba(204,122,140,0.1); border-color: rgba(204,122,140,0.25); transform: scale(1.04); }
+  .diary-day.empty { background: transparent; cursor: default; }
+  .diary-day.empty:hover { transform: none; background: transparent; border-color: transparent; }
+  .diary-day.today { border-color: var(--accent); font-weight: 600; box-shadow: 0 0 0 1.5px rgba(204,122,140,0.12); }
+  .diary-day .mood-emoji { font-size: 13px; line-height: 1; }
+  .diary-day .sad-dot, .diary-day .happy-dot { font-size: 5px; position: absolute; bottom: 2px; }
+  .diary-day .sad-dot  { right: 5px; color: #7c8cc4; }
+  .diary-day .happy-dot { right: 11px; color: #e8b84b; }
+  .diary-record-area { text-align: center; margin-top: 12px; }
+  .diary-record-btn {
+    padding: 10px 28px; border-radius: 20px; border: none;
+    background: var(--accent); color: #fff; font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: inherit; transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(168,94,112,0.18);
+  }
+  .diary-record-btn:hover { opacity: 0.9; transform: scale(1.04); box-shadow: 0 4px 16px rgba(168,94,112,0.28); }
+  .view-entry { padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.45); margin-bottom: 12px; }
+  .view-entry .ve-mood { text-align: center; font-size: 36px; margin-bottom: 6px; }
+  .view-entry .ve-row { font-size: 12px; color: var(--text); line-height: 1.6; padding: 4px 0; }
+  .view-entry .ve-row .ve-icon { margin-right: 4px; }
+  .view-entry .ve-row strong { color: var(--accent-deep); font-weight: 600; }
+  .view-empty { text-align: center; padding: 18px; color: var(--text-soft); font-size: 12px; font-weight: 300; line-height: 1.7; }
+  .modal-edit-link { text-align: center; margin-top: 8px; }
+  .modal-edit-link a { color: var(--accent); font-size: 11px; cursor: pointer; font-weight: 500; }
+
+  /* ══════════════════════════════════════
+     DIARY MODAL
+     ══════════════════════════════════════ */
+
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.25s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .modal-card {
+    background: #fff; border-radius: 22px;
+    padding: 24px 22px 20px; width: 92%; max-width: 400px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+    animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 14px;
+    width: 28px; height: 28px; border-radius: 50%;
+    border: none; background: rgba(0,0,0,0.05);
+    font-size: 16px; cursor: pointer; color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .modal-close:hover { background: rgba(0,0,0,0.1); color: var(--text); }
+  .modal-date { text-align: center; font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+  .mood-section { text-align: center; margin-bottom: 14px; }
+  .mood-label { font-size: 12px; color: var(--text-soft); margin-bottom: 6px; font-weight: 500; }
+  .mood-options { display: flex; gap: 6px; justify-content: center; }
+  .mood-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 2px solid transparent; background: rgba(255,255,255,0.5);
+    font-size: 24px; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mood-btn:hover { transform: scale(1.1); }
+  .mood-btn.selected { border-color: var(--accent); background: rgba(204,122,140,0.08); transform: scale(1.1); box-shadow: 0 2px 8px rgba(168,94,112,0.15); }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { display: block; font-size: 11px; color: var(--text-soft); margin-bottom: 3px; font-weight: 500; }
+  .modal-field input, .modal-field textarea {
+    width: 100%; padding: 8px 12px; border-radius: 12px;
+    border: 1px solid rgba(204,122,140,0.18);
+    background: rgba(255,245,247,0.5); color: var(--text);
+    font-size: 13px; font-family: inherit; outline: none;
+    resize: vertical; transition: border 0.2s;
+  }
+  .modal-field input:focus, .modal-field textarea:focus { border-color: var(--accent); }
+  .modal-field textarea { min-height: 48px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .modal-btn {
+    padding: 8px 18px; border-radius: 16px;
+    border: 1px solid rgba(204,122,140,0.18);
+    background: rgba(255,255,255,0.6); color: var(--text);
+    font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.2s;
+  }
+  .modal-btn:hover { background: rgba(204,122,140,0.06); }
+  .modal-btn.primary { background: var(--accent); color: #fff; border: none; font-weight: 500; }
+  .modal-btn.primary:hover { opacity: 0.9; box-shadow: 0 2px 12px rgba(168,94,112,0.25); }
+  .modal-btn.danger { color: #b85c5c; border-color: rgba(184,92,92,0.2); }
+  .modal-btn.danger:hover { background: rgba(184,92,92,0.05); }
+
+  /* ══════════════════════════════════════
+     PERIOD TRACKER
+     ══════════════════════════════════════ */
+
+  .period-card { }
+  .period-card-header {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin-bottom: 14px;
+  }
+  .period-card-header .icon { font-size: 24px; }
+  .period-card-header .title {
+    font-family: var(--font-cute);
+    font-size: 20px; color: var(--text); letter-spacing: 1.5px; font-weight: 400;
+  }
+
+  /* ── Phase indicator ── */
+  .period-phase {
+    text-align: center; margin-bottom: 14px;
+    padding: 14px 16px; background: rgba(255,255,255,0.4);
+    border-radius: 16px; border: 1px solid rgba(255,255,255,0.5);
+  }
+  .period-phase .pp-dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; margin-right: 5px;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:.5;transform:scale(.8)} 50%{opacity:1;transform:scale(1.2)} }
+  .period-phase .pp-label { font-size: 17px; font-weight: 600; color: var(--text); }
+  .period-phase .pp-sub { font-size: 11px; color: var(--text-soft); margin-top: 4px; font-weight: 300; }
+  .period-phase .pp-next { font-size: 12px; color: var(--accent-deep); margin-top: 5px; font-weight: 400; }
+
+  .period-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .period-btn {
+    padding: 8px 18px; border-radius: 18px;
+    border: 1px solid rgba(204,122,140,0.18);
+    background: rgba(255,255,255,0.5); color: var(--text);
+    font-size: 12px; cursor: pointer; font-family: inherit; transition: all 0.2s;
+  }
+  .period-btn:hover { background: rgba(204,122,140,0.08); border-color: var(--accent-soft); }
+  .period-btn.primary { background: var(--accent); color: #fff; border: none; font-weight: 500; }
+  .period-btn.primary:hover { opacity: 0.9; transform: scale(1.03); box-shadow: var(--shadow-md); }
+  .period-setup { text-align: center; padding: 18px 14px; background: rgba(255,255,255,0.45); border-radius: 16px; }
+  .period-setup label { display: block; font-size: 12px; color: var(--text-soft); margin-bottom: 3px; font-weight: 500; }
+  .period-setup input {
+    padding: 8px 12px; border-radius: 14px; width: 100%; max-width: 220px;
+    border: 1px solid rgba(204,122,140,0.18); background: rgba(255,255,255,0.6);
+    color: var(--text); font-size: 13px; font-family: inherit;
+    text-align: center; outline: none; margin-bottom: 10px; transition: border 0.2s;
+  }
+  .period-setup input:focus { border-color: var(--accent); }
+  .period-setup .hint { font-size: 10px; color: var(--text-muted); margin-bottom: 6px; }
+  .period-advice { border-top: 1px solid rgba(204,122,140,0.12); padding-top: 14px; }
+  .period-advice-title { text-align: center; font-size: 13px; color: var(--text-soft); margin-bottom: 8px; font-weight: 500; }
+  .advice-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 12px; margin-bottom: 5px;
+    background: rgba(255,255,255,0.38); border-radius: 10px;
+    font-size: 12px; color: var(--text); line-height: 1.6;
+    border: 1px solid rgba(255,255,255,0.4);
+  }
+  .advice-item .ai-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .advice-item .ai-text { flex: 1; }
+  .advice-item .ai-text strong { color: var(--accent-deep); font-weight: 600; }
+
+  /* ── Quick actions ── */
+  .period-actions {
+    display: flex; gap: 10px; justify-content: center;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .period-btn {
+    padding: 10px 20px; border-radius: 22px; border: 1.5px solid rgba(240,98,146,0.2);
+    background: rgba(255,255,255,0.55);
+    color: #c2185b; font-size: 13px; cursor: pointer;
+    font-family: inherit;
+    transition: all 0.25s;
+  }
+  .period-btn:hover {
+    background: rgba(240,98,146,0.12);
+    border-color: #f06292;
+  }
+  .period-btn.primary {
+    background: linear-gradient(135deg, #f06292, #e91e63);
+    color: #fff; border: none;
+    font-weight: 600;
+  }
+  .period-btn.primary:hover {
+    transform: scale(1.04);
+    box-shadow: 0 4px 16px rgba(233,30,99,0.3);
+  }
+
+  /* ── Setup form ── */
+  .period-setup {
+    text-align: center; padding: 20px 16px;
+    background: rgba(255,235,238,0.7); border-radius: 18px;
+  }
+  .period-setup label {
+    display: block; font-size: 13px; color: #ad1457;
+    margin-bottom: 4px; font-weight: 500;
+  }
+  .period-setup input {
+    padding: 10px 14px; border-radius: 18px; width: 100%; max-width: 240px;
+    border: 1.5px solid rgba(240,98,146,0.2);
+    background: rgba(255,255,255,0.7); color: #880e4f;
+    font-size: 14px; font-family: inherit; text-align: center; outline: none;
+    margin-bottom: 12px; transition: border 0.2s;
+  }
+  .period-setup input:focus { border-color: #f06292; }
+  .period-setup .hint {
+    font-size: 11px; color: #ad1457; opacity: 0.7; margin-bottom: 8px;
+  }
+
+  /* ── Advice list ── */
+  .period-advice {
+    border-top: 1.5px solid rgba(240,98,146,0.15);
+    padding-top: 16px;
+  }
+  .period-advice-title {
+    text-align: center; font-size: 14px; color: #ad1457;
+    margin-bottom: 10px; font-weight: 600;
+  }
+  .advice-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 14px; margin-bottom: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 12px;
+    font-size: 13px; color: #880e4f;
+    line-height: 1.65;
+    border: 1px solid rgba(255,255,255,0.45);
+    animation: msgIn 0.35s ease-out;
+  }
+  .advice-item .ai-icon {
+    font-size: 18px; flex-shrink: 0; margin-top: 1px;
+  }
+  .advice-item .ai-text { flex: 1; }
+  .advice-item .ai-text strong { color: #c2185b; }
+
+  /* ══════════════════════════════════════
+     MESSAGE BOARD
+     ══════════════════════════════════════ */
+
+  .msg-card { }
+  .msg-card-header {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin-bottom: 18px;
+  }
+  .msg-card-header .icon { font-size: 24px; }
+  .msg-card-header .title {
+    font-family: var(--font-cute);
+    font-size: 20px; color: var(--text); letter-spacing: 1.5px; font-weight: 400;
+  }
+
+  /* ── Message list ── */
+  .msg-list {
+    max-height: 380px; overflow-y: auto;
+    padding: 4px 8px;
+    display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+  .msg-list::-webkit-scrollbar { width: 4px; }
+  .msg-list::-webkit-scrollbar-track { background: transparent; }
+  .msg-list::-webkit-scrollbar-thumb {
+    background: rgba(204,122,140,0.2); border-radius: 2px;
+  }
+  .msg-empty {
+    text-align: center; padding: 36px 20px; color: var(--text-soft);
+    font-size: 13px; font-weight: 300;
+  }
+  .msg-empty .big { font-size: 38px; display: block; margin-bottom: 8px; }
+
+  /* ── Each message ── */
+  .msg-row {
+    display: flex; flex-direction: column;
+    animation: msgIn 0.35s ease-out;
+  }
+  .msg-row.mine { align-items: flex-end; }
+  .msg-row.theirs { align-items: flex-start; }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-meta {
+    font-size: 11px; color: #c2185b; margin-bottom: 3px;
+    padding: 0 6px; display: flex; gap: 8px; align-items: baseline;
+  }
+  .msg-sender { font-weight: 600; }
+  .msg-time { opacity: 0.7; font-weight: 300; }
+
+  .msg-bubble {
+    max-width: 75%;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-size: 15px; line-height: 1.6;
+    word-break: break-word;
+    position: relative;
+  }
+  .mine .msg-bubble {
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+    color: #fff; border-bottom-right-radius: 6px;
+  }
+  .theirs .msg-bubble {
+    background: rgba(255,255,255,0.7);
+    color: var(--text); border-bottom-left-radius: 6px;
+    border: 1px solid rgba(204,122,140,0.1);
+  }
+  .msg-meta { color: var(--text-soft); }
+  .msg-sender { color: var(--text); }
+  .msg-config-notice { background: rgba(255,255,255,0.45); color: var(--text-soft); }
+  .msg-config-notice code { background: rgba(204,122,140,0.1); }
+  .msg-nickname, .msg-input { border-color: rgba(204,122,140,0.18); color: var(--text); }
+  .msg-nickname:focus, .msg-input:focus { border-color: var(--accent); }
+  .msg-send-btn { background: var(--accent); }
+  .msg-send-btn:hover { box-shadow: 0 4px 14px rgba(168,94,112,0.3); }
+  .toast { background: rgba(168,94,112,0.9); }
+
+  /* ── Config notice ── */
+  .msg-config-notice {
+    text-align: center; padding: 20px 16px;
+    background: rgba(255,235,238,0.7); border-radius: 16px;
+    font-size: 13px; color: #ad1457; line-height: 1.8;
+  }
+  .msg-config-notice code {
+    background: rgba(240,98,146,0.12); padding: 1px 6px;
+    border-radius: 4px; font-size: 12px;
+  }
+
+  /* ── Input area ── */
+  .msg-input-area {
+    margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid rgba(204,122,140,0.12);
+  }
+  .msg-input-row {
+    display: flex; gap: 10px; align-items: center;
+  }
+  .msg-nickname {
+    padding: 10px 14px; border-radius: 20px;
+    border: 1.5px solid rgba(240, 98, 146, 0.2);
+    background: rgba(255,255,255,0.6); color: #880e4f;
+    font-size: 14px; outline: none; min-width: 80px; max-width: 100px;
+    font-family: inherit; transition: border 0.2s;
+  }
+  .msg-nickname:focus { border-color: #f06292; }
+
+  .msg-input {
+    flex: 1; padding: 10px 16px; border-radius: 22px;
+    border: 1.5px solid rgba(240, 98, 146, 0.2);
+    background: rgba(255,255,255,0.6); color: #880e4f;
+    font-size: 14px; outline: none; font-family: inherit;
+    transition: border 0.2s;
+  }
+  .msg-input:focus { border-color: #f06292; }
+  .msg-input::placeholder { color: #d81b60; opacity: 0.45; }
+
+  .msg-send-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #f06292, #e91e63);
+    color: #fff; font-size: 20px; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .msg-send-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.35);
+  }
+  .msg-send-btn:active { transform: scale(0.92); }
+  .msg-send-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: rgba(233, 30, 99, 0.9); color: #fff;
+    padding: 10px 24px; border-radius: 24px; font-size: 14px;
+    z-index: 999; animation: toastIn 0.3s ease-out;
+    pointer-events: none;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ══════════════════════════════════════
+     BOTTOM NAVIGATION
+     ══════════════════════════════════════ */
+
+  .bottom-nav {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 100;
+    display: flex; gap: 2px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 6px 10px;
+    box-shadow: 0 4px 24px rgba(160,120,135,0.14), 0 0 0 0.5px rgba(255,255,255,0.6);
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1px; padding: 4px 12px; cursor: pointer;
+    color: var(--text-muted); text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px; min-width: 48px;
+    -webkit-tap-highlight-color: transparent; user-select: none;
+  }
+  .nav-item .nav-icon { font-size: 20px; transition: transform 0.3s; }
+  .nav-item .nav-label { font-size: 9px; font-weight: 500; }
+  .nav-item.active {
+    color: var(--accent);
+    background: rgba(204,122,140,0.08);
+  }
+  .nav-item.active .nav-icon { transform: translateY(-3px) scale(1.15); }
+  .nav-item:active { transform: scale(0.9); }
+
+  body { padding-bottom: 100px !important; }
+
+  /* ══════════════════════════════════════
+     DECORATIONS: Wind chime
+     ══════════════════════════════════════ */
+
+  .windchime {
+    position: fixed; top: 12px; right: 14px; z-index: 50;
+    pointer-events: none; cursor: default;
+  }
+  .windchime .wc-string {
+    width: 1.5px; height: 28px; background: #d7ccc8;
+    margin: 0 auto; border-radius: 1px;
+    animation: chimeSway 4s ease-in-out infinite;
+    transform-origin: top center;
+  }
+  .windchime .wc-bell {
+    width: 16px; height: 20px; margin: 0 auto;
+    background: linear-gradient(180deg, #fff9f0 0%, #f5e6d3 60%, #e8d5c0 100%);
+    border-radius: 50% 50% 30% 30%;
+    box-shadow: 0 1px 4px rgba(180,160,140,0.3), inset 0 2px 0 rgba(255,255,255,0.6);
+    position: relative;
+    animation: chimeSway 4s ease-in-out infinite 0.15s;
+    transform-origin: top center;
+  }
+  .windchime .wc-bell::after {
+    content: '🔔'; font-size: 6px;
+    position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+    opacity: 0.6;
+  }
+  .windchime .wc-clapper {
+    width: 4px; height: 4px; background: #c9b99a;
+    border-radius: 50%; margin: 1px auto 0;
+    animation: chimeSway 4s ease-in-out infinite 0.3s;
+    transform-origin: top center;
+  }
+  .windchime + .windchime {
+    right: 44px; top: 18px;
+  }
+  .windchime + .windchime .wc-string { height: 22px; }
+  .windchime + .windchime .wc-bell { width: 12px; height: 16px; }
+
+  @keyframes chimeSway {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(3deg); }
+    75% { transform: rotate(-3deg); }
+  }
+
+  /* ══════════════════════════════════════
+     DECORATIONS: Butterflies
+     ══════════════════════════════════════ */
+
+  .butterfly {
+    position: fixed; z-index: 10; pointer-events: none;
+    font-size: 22px; opacity: 0.7;
+    animation: butterflyFly var(--bf-dur) ease-in-out infinite;
+    animation-delay: var(--bf-delay);
+    left: var(--bf-x); top: var(--bf-y);
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.08));
+  }
+  @keyframes butterflyFly {
+    0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+    15%  { transform: translate(30px, -40px) rotate(8deg) scale(1.1); }
+    30%  { transform: translate(-20px, -80px) rotate(-5deg) scale(0.95); }
+    45%  { transform: translate(40px, -30px) rotate(12deg) scale(1.05); }
+    60%  { transform: translate(-30px, -60px) rotate(-8deg) scale(0.9); }
+    75%  { transform: translate(15px, -45px) rotate(4deg) scale(1.08); }
+    90%  { transform: translate(-10px, -70px) rotate(-3deg) scale(1); }
+    100% { transform: translate(0, -90px) rotate(0deg) scale(0.7); opacity: 0.3; }
+  }
+
+  /* ══════════════════════════════════════
+     DECORATIONS: White bellflowers
+     ══════════════════════════════════════ */
+
+  .bellflower {
+    position: fixed; z-index: 5; pointer-events: none;
+    font-size: 26px;
+    animation: bellSway 5s ease-in-out infinite;
+    animation-delay: var(--bfr-delay);
+    left: var(--bfr-x); top: var(--bfr-y);
+    opacity: 0.65;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.06));
+  }
+  @keyframes bellSway {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    30% { transform: rotate(6deg) translateY(-4px); }
+    60% { transform: rotate(-5deg) translateY(2px); }
+  }
+
+  .corner-bellflowers {
+    position: fixed; bottom: 100px; left: 8px; z-index: 5;
+    pointer-events: none; font-size: 24px; opacity: 0.5;
+    display: flex; flex-direction: column; align-items: center;
+    animation: bellSway 5s ease-in-out infinite;
+  }
+  .corner-bellflowers.right {
+    left: auto; right: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Floating hearts -->
+<div class="hearts-container" id="heartsContainer"></div>
+
+<!-- Floating petals -->
+<div id="petalsContainer"></div>
+
+<!-- ══════════════════════════════════════
+     DECORATIONS: Wind chimes, butterflies, bellflowers
+     ══════════════════════════════════════ -->
+<div class="windchime" style="top:14px;right:18px;">
+  <div class="wc-string"></div>
+  <div class="wc-bell"></div>
+  <div class="wc-clapper"></div>
+</div>
+<div class="windchime" style="top:20px;right:48px;">
+  <div class="wc-string"></div>
+  <div class="wc-bell"></div>
+  <div class="wc-clapper"></div>
+</div>
+
+<div id="butterfliesContainer"></div>
+
+<div class="corner-bellflowers">💮</div>
+<div class="corner-bellflowers right">💮</div>
+
+<!-- Main card -->
+<div class="card active" id="cardLove">
+  <div class="bear">🐻‍❄️</div>
+  <div class="title">我们的小时光</div>
+  <div class="subtitle">从校服到余生 · 很高兴重新认识你</div>
+
+  <div class="name-display">严梦琪</div>
+
+  <div class="divider"></div>
+
+  <div class="counters">
+    <div class="counter-box" id="reconnectBox">
+      <div class="emoji">👋</div>
+      <div class="label">重新认识</div>
+      <div class="number" id="reconnectDays">0</div>
+      <div class="unit">天</div>
+    </div>
+    <div class="counter-box" id="loveBox">
+      <div class="emoji">💗</div>
+      <div class="label">在一起</div>
+      <div class="number" id="loveDays">0</div>
+      <div class="unit">天</div>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-label">🎯 距离第一个 100 天纪念日</div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-text" id="progressText"></div>
+  </div>
+
+  <div class="quote">
+    <span class="sparkle">✨</span>
+    世间美好，与你环环相扣
+    <span class="sparkle">✨</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     WEATHER CARD
+     ══════════════════════════════════════ -->
+<div class="card weather-card" id="cardWeather">
+  <div class="weather-card-header">
+    <span class="icon">🌤️</span>
+    <span class="title">今日天气</span>
+  </div>
+  <div class="weather-location">📍 成都中医药大学 · 温江</div>
+
+  <!-- Weather data -->
+  <div class="weather-grid" id="weatherGrid">
+    <div class="weather-loading">
+      <span class="big">⏳</span>
+      获取天气中...
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  <div class="weather-suggestions" id="weatherSuggestions"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DIARY CALENDAR CARD
+     ══════════════════════════════════════ -->
+<div class="card diary-card" id="cardDiary">
+  <div class="diary-card-header">
+    <div class="left">
+      <span class="icon">📔</span>
+      <span class="title">我们的日记</span>
+    </div>
+    <div class="diary-month-nav">
+      <button class="nav-btn" id="diaryPrev">◀</button>
+      <span class="month-label" id="diaryMonthLabel"></span>
+      <button class="nav-btn" id="diaryNext">▶</button>
+    </div>
+  </div>
+
+  <div class="diary-calendar">
+    <div class="diary-weekdays">
+      <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+    </div>
+    <div class="diary-grid" id="diaryGrid"></div>
+  </div>
+
+  <div class="diary-record-area">
+    <button class="diary-record-btn">📝 记录今天</button>
+  </div>
+</div>
+
+<!-- Diary modal -->
+<div class="modal-overlay" id="diaryModal" style="display:none;">
+  <div class="modal-card">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-date" id="modalDate"></div>
+
+    <!-- VIEW mode — shows existing entry -->
+    <div id="modalView"></div>
+
+    <!-- EDIT mode — input form -->
+    <div id="modalEdit" style="display:none;">
+      <div class="mood-section">
+        <div class="mood-label">😊 今天心情如何？</div>
+        <div class="mood-options" id="moodOptions">
+          <button class="mood-btn" data-mood="1" title="很糟糕">😫</button>
+          <button class="mood-btn" data-mood="2" title="不太好">😞</button>
+          <button class="mood-btn" data-mood="3" title="一般般">😐</button>
+          <button class="mood-btn" data-mood="4" title="还不错">😊</button>
+          <button class="mood-btn" data-mood="5" title="超开心">🥰</button>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>🎉 有什么开心/有意义的事？</label>
+        <textarea id="modalHappy" placeholder="记录今天的美好瞬间..." rows="2"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>💔 有什么伤心的事吗？</label>
+        <textarea id="modalSad" placeholder="不开心的也可以写下来..." rows="2"></textarea>
+      </div>
+      <div class="modal-field">
+        <label>📝 备注</label>
+        <input type="text" id="modalNote" placeholder="其他想说的话..." maxlength="100">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn danger" id="modalDelete" style="display:none;">🗑 删除</button>
+      <button class="modal-btn" id="modalCancel">关闭</button>
+      <button class="modal-btn primary" id="modalSave" style="display:none;">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PERIOD TRACKER CARD
+     ══════════════════════════════════════ -->
+<div class="card period-card" id="cardPeriod">
+  <div class="period-card-header">
+    <span class="icon">📅</span>
+    <span class="title">经期助手</span>
+  </div>
+
+  <!-- Phase indicator (populated by JS) -->
+  <div id="periodPhase"></div>
+
+  <!-- Quick actions -->
+  <div class="period-actions" id="periodActions"></div>
+
+  <!-- Setup form (hidden when configured) -->
+  <div class="period-setup" id="periodSetup" style="display:none;"></div>
+
+  <!-- Advice (populated by JS) -->
+  <div class="period-advice" id="periodAdvice"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MESSAGE BOARD CARD
+     ══════════════════════════════════════ -->
+<div class="card msg-card" id="cardMessages">
+  <div class="msg-card-header">
+    <span class="icon">💌</span>
+    <span class="title">我们的留言板</span>
+  </div>
+
+  <!-- Message list -->
+  <div class="msg-list" id="msgList">
+    <div class="msg-empty">
+      <span class="big">📝</span>
+      还没有留言<br>写下想对 ta 说的第一句话吧 💕
+    </div>
+  </div>
+
+  <!-- Input area -->
+  <div class="msg-input-area">
+    <div class="msg-input-row">
+      <input class="msg-nickname" id="msgNickname"
+             type="text" maxlength="10" placeholder="你的昵称"
+             autocomplete="off">
+      <input class="msg-input" id="msgInput"
+             type="text" maxlength="200" placeholder="想说点什么..."
+             autocomplete="off">
+      <button class="msg-send-btn" id="msgSendBtn" title="发送">
+        💗
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script>
+(function() {
+  // ── Config ──
+  const RECONNECT_DATE = new Date(2026, 3, 29); // April 29, 2026 (month is 0-indexed)
+  const LOVE_DATE      = new Date(2026, 4, 28); // May 28, 2026
+
+  const reconnectEl  = document.getElementById('reconnectDays');
+  const loveEl       = document.getElementById('loveDays');
+  const progressBar  = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+
+  // ── Day diff ──
+  function daysSince(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+  }
+
+  function updateCounters() {
+    const reconnectDays = daysSince(RECONNECT_DATE);
+    const loveDays     = daysSince(LOVE_DATE);
+
+    // Animate numbers
+    animateNumber(reconnectEl, reconnectDays);
+    animateNumber(loveEl, loveDays);
+
+    // Progress toward 100 days
+    const pct = Math.min(100, Math.round((loveDays / 100) * 100));
+    progressBar.style.width = pct + '%';
+    if (loveDays >= 100) {
+      progressText.textContent = '🎉 已达成 100 天！接下来的每一天都是新的里程碑~';
+    } else {
+      progressText.textContent = '已走过 ' + pct + '% · 还差 ' + (100 - loveDays) + ' 天';
+    }
+  }
+
+  function animateNumber(el, target) {
+    const current = parseInt(el.textContent, 10) || 0;
+    if (current === target) return;
+    const diff = target - current;
+    const steps = Math.min(Math.abs(diff), 40);
+    const stepSize = diff / steps;
+    let step = 0;
+    const interval = setInterval(() => {
+      step++;
+      el.textContent = Math.round(current + stepSize * step);
+      if (step >= steps) {
+        el.textContent = target;
+        clearInterval(interval);
+      }
+    }, 40);
+  }
+
+  // ── Generate floating hearts ──
+  const heartEmojis = ['💕','💖','💗','💝','💘','🩷','🌸','💐','🌷','🦋'];
+  const heartsContainer = document.getElementById('heartsContainer');
+  for (let i = 0; i < 18; i++) {
+    const span = document.createElement('span');
+    span.className = 'floating-heart';
+    span.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+    span.style.setProperty('--x', Math.random() * 94 + '%');
+    span.style.setProperty('--dur', (8 + Math.random() * 14) + 's');
+    span.style.setProperty('--delay', Math.random() * 10 + 's');
+    span.style.fontSize = (18 + Math.random() * 22) + 'px';
+    heartsContainer.appendChild(span);
+  }
+
+  // ── Generate petals ──
+  const petalsContainer = document.getElementById('petalsContainer');
+  for (let i = 0; i < 16; i++) {
+    const div = document.createElement('div');
+    div.className = 'petal';
+    div.style.setProperty('--x', Math.random() * 96 + '%');
+    div.style.setProperty('--dur', (10 + Math.random() * 16) + 's');
+    div.style.setProperty('--delay', Math.random() * 12 + 's');
+    div.style.opacity = (0.4 + Math.random() * 0.4);
+    petalsContainer.appendChild(div);
+  }
+
+  // ── Init & tick ──
+  updateCounters();
+  setInterval(updateCounters, 60000); // refresh every minute
+
+  // ── Click easter egg: shower hearts on click ──
+  document.addEventListener('click', function(e) {
+    for (let i = 0; i < 5; i++) {
+      const h = document.createElement('span');
+      h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+      h.style.cssText = [
+        'position:fixed; z-index:999; pointer-events:none;',
+        'font-size:' + (14 + Math.random() * 20) + 'px;',
+        'left:' + (e.clientX + (Math.random() - 0.5) * 60) + 'px;',
+        'top:' + (e.clientY + (Math.random() - 0.5) * 40) + 'px;',
+        'animation: burst ' + (0.6 + Math.random() * 0.8) + 's ease-out forwards;'
+      ].join('');
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1500);
+    }
+  });
+
+  // burst keyframes injected dynamically
+  const burstStyle = document.createElement('style');
+  burstStyle.textContent = '@keyframes burst { 0% { opacity:1; transform:translate(0,0) scale(0.5); } 100% { opacity:0; transform:translate(var(--tx,0px),-120px) scale(1.4); } }';
+  document.head.appendChild(burstStyle);
+
+  // ══════════════════════════════════════
+  //  WEATHER CARD
+  // ══════════════════════════════════════
+
+  // ── Chengdu University of TCM, Wenjiang coordinates ──
+  const WEATHER_LAT = 30.7035;
+  const WEATHER_LON = 103.8145;
+
+  const weatherGrid        = document.getElementById('weatherGrid');
+  const weatherSuggestions = document.getElementById('weatherSuggestions');
+
+  // ── Weather code → emoji + text ──
+  function weatherDesc(code) {
+    const map = {
+      113: ['☀️','晴'], 116: ['🌤️','晴间多云'], 119: ['⛅','多云'],
+      122: ['☁️','阴'], 143: ['🌫️','雾'], 176: ['🌦️','阵雨'],
+      179: ['🌨️','阵雪'], 182: ['🌨️','雨夹雪'], 185: ['🌧️','冻雨'],
+      200: ['⛈️','雷阵雨'], 227: ['🌬️','暴风雪'], 230: ['❄️','暴雪'],
+      248: ['🌫️','大雾'], 260: ['🌫️','冻雾'], 263: ['🌧️','小雨'],
+      266: ['🌧️','小雨'], 281: ['🌧️','冻雨'], 284: ['🌧️','冻雨'],
+      293: ['🌧️','小雨'], 296: ['🌧️','小雨'], 299: ['🌧️','中雨'],
+      302: ['🌧️','中雨'], 305: ['🌧️','大雨'], 308: ['🌧️','大雨'],
+      311: ['🌧️','小雨'], 314: ['🌧️','中雨'], 317: ['🌧️','大雨'],
+      320: ['🌨️','雨夹雪'], 323: ['❄️','小雪'], 326: ['❄️','小雪'],
+      329: ['❄️','中雪'], 332: ['❄️','中雪'], 335: ['❄️','大雪'],
+      338: ['❄️','大雪'], 350: ['🌨️','冰雹'], 353: ['🌧️','阵雨'],
+      356: ['🌧️','大雨'], 359: ['🌧️','暴雨'], 362: ['🌨️','雨夹雪'],
+      365: ['🌨️','雨夹雪'], 368: ['❄️','阵雪'], 371: ['❄️','大雪'],
+      374: ['🌨️','冰雹'], 377: ['🌨️','冰雹'], 386: ['⛈️','雷阵雨'],
+      389: ['⛈️','大雷雨'], 392: ['⛈️','雷阵雪'], 395: ['❄️','暴雪']
+    };
+    return map[code] || ['🌡️','未知'];
+  }
+
+  // ── Wind direction code → Chinese ──
+  function windDirCN(dir) {
+    const map = { N:'北', NNE:'东北偏北', NE:'东北', ENE:'东北偏东',
+      E:'东', ESE:'东南偏东', SE:'东南', SSE:'东南偏南',
+      S:'南', SSW:'西南偏南', SW:'西南', WSW:'西南偏西',
+      W:'西', WNW:'西北偏西', NW:'西北', NNW:'西北偏北' };
+    return map[dir] || dir;
+  }
+
+  // ── Wind speed km/h → Beaufort scale ──
+  function beaufort(kmh) {
+    if (kmh < 1)  return '无风';
+    if (kmh < 6)  return '1级 软风';
+    if (kmh < 12) return '2级 轻风';
+    if (kmh < 20) return '3级 微风';
+    if (kmh < 29) return '4级 和风';
+    if (kmh < 39) return '5级 清风';
+    if (kmh < 50) return '6级 强风';
+    if (kmh < 62) return '7级 劲风';
+    if (kmh < 75) return '8级 大风';
+    return '9+级 烈风';
+  }
+
+  // ── UV Index → level + color hint ──
+  function uvLevel(uv) {
+    if (uv <= 2)  return ['🟢','低'];
+    if (uv <= 5)  return ['🟡','中等'];
+    if (uv <= 7)  return ['🟠','高'];
+    if (uv <= 10) return ['🔴','很高'];
+    return             ['🟣','极高'];
+  }
+
+  // ── Generate suggestions based on weather ──
+  function generateSuggestions(weather) {
+    const temp     = parseInt(weather.temp_C);
+    const feels    = parseInt(weather.FeelsLikeC);
+    const humidity = parseInt(weather.humidity);
+    const windKmh  = parseInt(weather.windspeedKmph);
+    const windDir  = windDirCN(weather.winddir16Point);
+    const [wEmoji, wText] = weatherDesc(parseInt(weather.weatherCode));
+    const maxTemp  = parseInt(weather.maxtempC);
+    const minTemp  = parseInt(weather.mintempC);
+    const tempDiff = maxTemp - minTemp;
+
+    const suggestions = [];
+
+    // ── 1. 穿衣建议 ──
+    let clothing = '';
+    if (temp >= 30)      clothing = '天气炎热，建议穿<b>短袖短裤</b>，选择透气面料。出门记得防晒~';
+    else if (temp >= 26) clothing = '气温舒适偏暖，建议穿<b>短袖</b>，可备一件薄外套应对空调房。';
+    else if (temp >= 22) clothing = '气温宜人，建议<b>薄长袖或短袖+薄外套</b>，轻松应对早晚温差。';
+    else if (temp >= 16) clothing = '天气偏凉，建议穿<b>长袖+外套</b>，早晚可加一件卫衣。';
+    else if (temp >= 10) clothing = '天气较冷，建议<b>厚外套或卫衣</b>，注意保暖。';
+    else                 clothing = '天气寒冷，建议穿<b>羽绒服或棉服</b>，围巾手套备起来！';
+
+    if (windKmh >= 30) clothing += ' 今天风较大，建议穿<b>防风外套</b>。';
+
+    suggestions.push({ icon: '👗', title: '穿衣', text: clothing });
+
+    // ── 2. 护肤建议 ──
+    let skincare = '';
+    const weatherCode = parseInt(weather.weatherCode);
+    const uv = weather.uvIndex || 0;
+    const [, uvLabel] = uvLevel(uv);
+
+    if (uv >= 6) {
+      skincare = `紫外线指数 <b>${uv}（${uvLabel}）</b>，务必涂抹<b>防晒霜 SPF50+</b>，戴帽子+墨镜，避免长时间暴晒！`;
+    } else if (uv >= 3) {
+      skincare = `紫外线指数 <b>${uv}（${uvLabel}）</b>，建议涂抹<b>防晒霜 SPF30</b>，短时间户外活动也需防护。`;
+    } else if (uv >= 1) {
+      skincare = `紫外线指数 <b>${uv}（${uvLabel}）</b>，日常<b>轻薄防晒</b>即可，紫外线较弱不用担心~`;
+    } else {
+      skincare = '紫外线较弱，做好<b>基础保湿</b>即可。';
+    }
+
+    if (humidity < 40) {
+      skincare += ' 空气<b>干燥</b>，建议使用<b>保湿精华+面霜</b>，多喝水补充水分 💧';
+    } else if (humidity > 75) {
+      skincare += ' 湿度较高，建议<b>清爽控油</b>，使用轻薄乳液避免闷痘。';
+    } else {
+      skincare += ' 湿度适中，保持日常护肤routine即可~';
+    }
+
+    suggestions.push({ icon: '🧴', title: '护肤', text: skincare });
+
+    // ── 3. 温差提醒 ──
+    let diffText = '';
+    if (tempDiff >= 12) {
+      diffText = `⚠️ 今天温差高达 <b>${tempDiff}°C</b>（${minTemp}°C ~ ${maxTemp}°C），早晚偏凉中午偏热，<b>一定要带外套</b>，小心着凉感冒！`;
+    } else if (tempDiff >= 7) {
+      diffText = `今天温差 <b>${tempDiff}°C</b>（${minTemp}°C ~ ${maxTemp}°C），早晚有凉意，建议<b>叠穿法</b>方便随时增减衣物。`;
+    } else if (tempDiff >= 4) {
+      diffText = `温差 ${tempDiff}°C，体感变化不大，但早晚出门还是<b>留意一下温度</b>哦~`;
+    } else {
+      diffText = `全天温度稳定在 ${minTemp}°C ~ ${maxTemp}°C 之间，穿衣不用太纠结~`;
+    }
+    suggestions.push({ icon: '🌡️', title: '温差', text: diffText });
+
+    // ── 4. 综合提醒 ──
+    let general = '';
+    const isRain = [176,263,266,293,296,299,302,305,308,311,314,317,353,356,359,386,389].includes(weatherCode);
+    const isFog  = [143,248,260].includes(weatherCode);
+    const isStorm = [200,386,389].includes(weatherCode);
+
+    if (isStorm) {
+      general += '⛈️ 今天有<b>雷阵雨</b>，<b>务必带伞</b>，尽量避免在树下避雨。';
+    } else if (isRain) {
+      general += '🌧️ 今天有雨，出门<b>别忘了带伞</b>☔。';
+    }
+    if (isFog) {
+      general += '🌫️ 今天有雾，出行<b>注意能见度</b>，开车慢行。';
+    }
+    if (feels - temp >= 3) {
+      general += ` 体感温度比实际高 ${feels - temp}°C，会感觉<b>闷热</b>，注意通风降温。`;
+    } else if (temp - feels >= 3) {
+      general += ` 体感温度比实际低 ${temp - feels}°C，<b>风寒效应</b>明显，多穿一点别硬扛~`;
+    }
+    if (!isRain && !isFog && !isStorm && Math.abs(feels - temp) < 3) {
+      general += `今天天气<b>${wText}</b>，体感舒适，很适合出门散步约会哦 💑`;
+    }
+
+    suggestions.push({ icon: '📋', title: '综合', text: general });
+
+    return suggestions;
+  }
+
+  // ── Render weather UI ──
+  function renderWeather(weather) {
+    const [wEmoji, wText] = weatherDesc(parseInt(weather.weatherCode));
+    const windDirLabel = windDirCN(weather.winddir16Point);
+    const windLabel = beaufort(parseInt(weather.windspeedKmph));
+
+    weatherGrid.innerHTML = `
+      <div class="weather-item weather-temp-main">
+        <span class="wt-big">${weather.temp_C}°C</span>
+        <div class="wt-meta">
+          <div>${wEmoji} ${wText}</div>
+          <div>🌡️ 体感 ${weather.FeelsLikeC}°C</div>
+          <div>🌅 ${weather.sunrise} · 🌇 ${weather.sunset}</div>
+        </div>
+      </div>
+      <div class="weather-item">
+        <div class="wi-icon">💧</div>
+        <div class="wi-label">湿度</div>
+        <div class="wi-value">${weather.humidity}%</div>
+      </div>
+      <div class="weather-item">
+        <div class="wi-icon">🌬️</div>
+        <div class="wi-label">风力</div>
+        <div class="wi-value small">${windLabel}</div>
+      </div>
+      <div class="weather-item">
+        <div class="wi-icon">🧭</div>
+        <div class="wi-label">风向</div>
+        <div class="wi-value small">${windDirLabel}风</div>
+      </div>
+      <div class="weather-item">
+        <div class="wi-icon">🌡️</div>
+        <div class="wi-label">最高温</div>
+        <div class="wi-value">${weather.maxtempC}°C</div>
+      </div>
+      <div class="weather-item">
+        <div class="wi-icon">❄️</div>
+        <div class="wi-label">最低温</div>
+        <div class="wi-value">${weather.mintempC}°C</div>
+      </div>
+      <div class="weather-item">
+        <div class="wi-icon">☀️</div>
+        <div class="wi-label">紫外线</div>
+        <div class="wi-value small">${uvLevel(weather.uvIndex)[0]} ${uvLevel(weather.uvIndex)[1]}</div>
+      </div>
+    `;
+
+    // Render suggestions
+    const suggestions = generateSuggestions(weather);
+    weatherSuggestions.innerHTML = suggestions.map((s, i) => `
+      <div class="suggestion-item" style="animation-delay:${i * 0.08}s">
+        <span class="si-icon">${s.icon}</span>
+        <span class="si-text"><strong>${s.title}：</strong>${s.text}</span>
+      </div>
+    `).join('');
+
+    // Update weather card header
+    const headerIcon = document.querySelector('.weather-card-header .icon');
+    if (headerIcon) headerIcon.textContent = wEmoji;
+  }
+
+  // ── Fetch weather from wttr.in ──
+  async function fetchWeather() {
+    try {
+      const url = `https://wttr.in/${WEATHER_LAT},${WEATHER_LON}?format=j1`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+
+      const current = data.current_condition[0];
+      const today   = data.weather[0];
+      const astro   = today.astronomy[0];
+
+      const weather = {
+        temp_C:        current.temp_C,
+        FeelsLikeC:    current.FeelsLikeC,
+        humidity:      current.humidity,
+        windspeedKmph: current.windspeedKmph,
+        winddir16Point: current.winddir16Point,
+        weatherCode:   current.weatherCode,
+        uvIndex:       parseInt(current.uvIndex) || 0,
+        maxtempC:      today.maxtempC,
+        mintempC:      today.mintempC,
+        sunrise:       astro.sunrise,
+        sunset:        astro.sunset
+      };
+
+      renderWeather(weather);
+    } catch (e) {
+      console.warn('Weather fetch error:', e.message);
+      weatherGrid.innerHTML = `
+        <div class="weather-loading weather-error" style="grid-column:1/-1">
+          <span class="big">😢</span>
+          天气加载失败<br><small>请检查网络连接后刷新页面</small>
+        </div>`;
+    }
+  }
+
+  // ── Init weather ──
+  fetchWeather();
+
+  // ══════════════════════════════════════
+  //  SHARED SUPABASE INIT
+  // ══════════════════════════════════════
+
+  // ★★★ 注册 supabase.com → 创建项目 → 替换下面两行 ★★★
+  var SUPABASE_URL = 'https://lhbcechwactdqcyhnkgp.supabase.co';
+  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoYmNlY2h3YWN0ZHFjeWhua2dwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzOTI1OTksImV4cCI6MjA5Njk2ODU5OX0.pAI86r8e0V9YqK6adY1tiJ-JFKDB0FAiK-TkMW2agC8';
+
+  var supabase = null; // shared Supabase client, used by diary + messages
+
+  function initSupabaseClient() {
+    if (typeof window.supabase === 'undefined' || !window.supabase.createClient) return false;
+    if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_KEY.includes('YOUR-ANON-KEY')) return false;
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return true;
+  }
+  initSupabaseClient(); // fire early so diary and messages both see it
+
+  // ══════════════════════════════════════
+  //  DIARY CALENDAR
+  // ══════════════════════════════════════
+
+  const MOOD_EMOJI = { 1:'😫', 2:'😞', 3:'😐', 4:'😊', 5:'🥰' };
+
+  const diaryGrid       = document.getElementById('diaryGrid');
+  const diaryMonthLabel = document.getElementById('diaryMonthLabel');
+  const diaryPrev       = document.getElementById('diaryPrev');
+  const diaryNext       = document.getElementById('diaryNext');
+  const diaryModal      = document.getElementById('diaryModal');
+  const diaryRecordBtn  = document.querySelector('.diary-record-btn');
+  const modalDate       = document.getElementById('modalDate');
+  const modalView       = document.getElementById('modalView');
+  const modalEdit       = document.getElementById('modalEdit');
+  const modalHappy      = document.getElementById('modalHappy');
+  const modalSad        = document.getElementById('modalSad');
+  const modalNote       = document.getElementById('modalNote');
+  const modalSave       = document.getElementById('modalSave');
+  const modalCancel     = document.getElementById('modalCancel');
+  const modalClose      = document.getElementById('modalClose');
+  const modalDelete     = document.getElementById('modalDelete');
+
+  let diaryYear  = new Date().getFullYear();
+  let diaryMonth = new Date().getMonth() + 1;
+  let editingDate = null;
+  let diaryEntries = {}; // in-memory: { 'YYYY-MM-DD': { mood, happy, sad, note } }
+
+  // ── Load diary from Supabase ──
+  async function diaryLoad() {
+    if (!supabase) return diaryEntries;
+    const { data, error } = await supabase.from('love_diary').select('*');
+    if (error) return diaryEntries;
+    const map = {};
+    (data || []).forEach(row => { map[row.date] = { mood: row.mood, happy: row.happy || '', sad: row.sad || '', note: row.note || '' }; });
+    diaryEntries = map;
+    return diaryEntries;
+  }
+
+  async function diarySave(date, entry) {
+    if (!supabase) return false;
+    // Upsert: delete then insert
+    await supabase.from('love_diary').delete().eq('date', date);
+    if (entry) {
+      const { error } = await supabase.from('love_diary').insert([{ date, ...entry }]);
+      return !error;
+    }
+    return true;
+  }
+
+  // ── Render calendar ──
+  async function renderCalendar() {
+    const entries = supabase ? await diaryLoad() : diaryEntries;
+    diaryMonthLabel.textContent = diaryYear + '年 ' + diaryMonth + '月';
+    const firstDay = new Date(diaryYear, diaryMonth - 1, 1);
+    const lastDay  = new Date(diaryYear, diaryMonth, 0);
+    const totalDays = lastDay.getDate();
+    let startDow = firstDay.getDay();
+    startDow = startDow === 0 ? 6 : startDow - 1;
+    const today = dateStr(new Date());
+    let html = '';
+    for (let i = 0; i < startDow; i++) html += '<div class="diary-day empty"></div>';
+
+    for (let d = 1; d <= totalDays; d++) {
+      const date = diaryYear + '-' + String(diaryMonth).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const entry = entries[date];
+      const cls = ['diary-day'];
+      if (date === today) cls.push('today');
+      let emojiHtml = '', markers = '';
+      if (entry) {
+        if (entry.mood && MOOD_EMOJI[entry.mood]) emojiHtml = '<div class="mood-emoji">' + MOOD_EMOJI[entry.mood] + '</div>';
+        if (entry.happy && entry.happy.trim()) markers += '<span class="happy-dot">⭐</span>';
+        if (entry.sad && entry.sad.trim()) markers += '<span class="sad-dot">💧</span>';
+      }
+      html += '<div class="' + cls.join(' ') + '" data-date="' + date + '"><span>' + d + '</span>' + emojiHtml + markers + '</div>';
+    }
+    diaryGrid.innerHTML = html;
+    diaryGrid.querySelectorAll('.diary-day:not(.empty)').forEach(day => {
+      day.addEventListener('click', () => openViewModal(day.dataset.date));
+    });
+  }
+
+  async function openViewModal(date) {
+    editingDate = date;
+    const entries = supabase ? await diaryLoad() : diaryEntries;
+    const entry = entries[date] || {};
+    const [y,m,d] = date.split('-');
+    modalDate.textContent = '📔 ' + y + '年' + m + '月' + d + '日';
+    modalEdit.style.display = 'none'; modalSave.style.display = 'none'; modalDelete.style.display = 'none';
+
+    if (!entry.mood && !entry.happy && !entry.sad && !entry.note) {
+      const isToday = date === dateStr(new Date());
+      modalView.innerHTML = '<div class="view-empty"><span style="font-size:36px;display:block;margin-bottom:8px;">📭</span>这天还没有记录'
+        + (isToday ? '<br><a href="javascript:void(0)" id="viewRecordToday" style="color:var(--accent);font-weight:600;text-decoration:underline;">📝 记录今天</a>' : '')
+        + '</div>';
+      if (isToday) { setTimeout(() => { const link = document.getElementById('viewRecordToday'); if (link) link.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(date); }); }, 0); }
+    } else {
+      let html = '<div class="view-entry">';
+      if (entry.mood) html += '<div class="ve-mood">' + (MOOD_EMOJI[entry.mood] || '') + '</div>';
+      if (entry.happy && entry.happy.trim()) html += '<div class="ve-row"><span class="ve-icon">🎉</span><strong>开心事：</strong>' + escapeHtml(entry.happy) + '</div>';
+      if (entry.sad && entry.sad.trim()) html += '<div class="ve-row"><span class="ve-icon">💔</span><strong>伤心事：</strong>' + escapeHtml(entry.sad) + '</div>';
+      if (entry.note && entry.note.trim()) html += '<div class="ve-row"><span class="ve-icon">📝</span><strong>备注：</strong>' + escapeHtml(entry.note) + '</div>';
+      html += '</div><div class="modal-edit-link"><a href="javascript:void(0)" id="viewEditLink">✏️ 编辑这条记录</a></div>';
+      modalView.innerHTML = html;
+      setTimeout(() => { const editLink = document.getElementById('viewEditLink'); if (editLink) editLink.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(date); }); }, 0);
+    }
+    diaryModal.style.display = 'flex';
+  }
+
+  async function openEditModal(date) {
+    editingDate = date;
+    const entries = supabase ? await diaryLoad() : diaryEntries;
+    const entry = entries[date];
+    const [y,m,d] = date.split('-');
+    modalDate.textContent = '✏️ ' + y + '年' + m + '月' + d + '日';
+    document.querySelectorAll('#moodOptions .mood-btn').forEach(btn => { btn.classList.toggle('selected', entry && parseInt(btn.dataset.mood) === entry.mood); });
+    modalHappy.value = (entry && entry.happy) || '';
+    modalSad.value   = (entry && entry.sad) || '';
+    modalNote.value  = (entry && entry.note) || '';
+    modalView.innerHTML = '';
+    modalEdit.style.display = 'block'; modalSave.style.display = 'inline-block'; modalDelete.style.display = entry ? 'inline-block' : 'none';
+    diaryModal.style.display = 'flex';
+  }
+
+  function closeDiaryModal() { diaryModal.style.display = 'none'; editingDate = null; }
+  function getSelectedMood() { const sel = document.querySelector('#moodOptions .mood-btn.selected'); return sel ? parseInt(sel.dataset.mood) : 0; }
+
+  async function saveDiaryEntry() {
+    if (!editingDate) return;
+    const mood = getSelectedMood();
+    const happy = modalHappy.value.trim();
+    const sad = modalSad.value.trim();
+    const note = modalNote.value.trim();
+
+    if (!mood && !happy && !sad && !note) {
+      await diarySave(editingDate, null);
+    } else {
+      await diarySave(editingDate, { mood, happy, sad, note });
+      diaryEntries[editingDate] = { mood, happy, sad, note };
+    }
+    closeDiaryModal();
+    await renderCalendar();
+    showToast('💾 日记已保存~');
+  }
+
+  async function deleteDiaryEntry() {
+    if (!editingDate) return;
+    await diarySave(editingDate, null);
+    delete diaryEntries[editingDate];
+    closeDiaryModal();
+    await renderCalendar();
+    showToast('🗑 记录已删除');
+  }
+
+  // ── "记录今天" button → EDIT for today ──
+  diaryRecordBtn.addEventListener('click', () => {
+    const today = dateStr(new Date());
+    openEditModal(today);
+  });
+
+  // ── Mood button clicks (toggle) ──
+  document.getElementById('moodOptions').addEventListener('click', (e) => {
+    const btn = e.target.closest('.mood-btn');
+    if (!btn) return;
+    const was = btn.classList.contains('selected');
+    document.querySelectorAll('#moodOptions .mood-btn').forEach(b => b.classList.remove('selected'));
+    if (!was) btn.classList.add('selected');
+  });
+
+  // ── Modal events ──
+  modalSave.addEventListener('click', saveDiaryEntry);
+  modalCancel.addEventListener('click', closeDiaryModal);
+  modalClose.addEventListener('click', closeDiaryModal);
+  modalDelete.addEventListener('click', deleteDiaryEntry);
+  diaryModal.addEventListener('click', (e) => {
+    if (e.target === diaryModal) closeDiaryModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && diaryModal.style.display === 'flex') closeDiaryModal();
+  });
+
+  // ── Month nav ──
+  diaryPrev.addEventListener('click', () => { diaryMonth--; if (diaryMonth<1) { diaryMonth=12; diaryYear--; } renderCalendar(); });
+  diaryNext.addEventListener('click', () => { diaryMonth++; if (diaryMonth>12) { diaryMonth=1; diaryYear++; } renderCalendar(); });
+
+  renderCalendar();
+
+  // ══════════════════════════════════════
+  //  PERIOD TRACKER
+  // ══════════════════════════════════════
+
+  const PERIOD_KEY = 'love_period_data';
+
+  const periodPhase   = document.getElementById('periodPhase');
+  const periodActions = document.getElementById('periodActions');
+  const periodSetup   = document.getElementById('periodSetup');
+  const periodAdvice  = document.getElementById('periodAdvice');
+
+  // ── Load / save period data ──
+  // Default: 严梦琪 — cycle 28 days, duration 9 days, last start 2026-06-04
+  const PERIOD_DEFAULTS = { lastPeriodStart: '2026-06-04', cycleLength: 28, periodDuration: 9 };
+  function loadPeriodData() {
+    try {
+      const raw = localStorage.getItem(PERIOD_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch(e) {}
+    return PERIOD_DEFAULTS; // hardcoded, no setup needed
+  }
+  function savePeriodData(data) {
+    localStorage.setItem(PERIOD_KEY, JSON.stringify(data));
+  }
+
+  // ── Date helpers ──
+  function dateStr(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
+  }
+  function parseDate(str) {
+    const [y,m,d] = str.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  function daysBetween(d1, d2) {
+    return Math.floor((d2 - d1) / (1000*60*60*24));
+  }
+
+  // ── Get current phase info ──
+  function getPhaseInfo(data) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const lastStart = parseDate(data.lastPeriodStart);
+    const cycleDay = daysBetween(lastStart, today) + 1; // day 1 = first day of period
+
+    if (cycleDay <= 0 || cycleDay > data.cycleLength) {
+      // Past due — recalculate
+      return null;
+    }
+
+    const cd = cycleDay;
+    let phase, phaseEmoji, phaseColor;
+    if (cd <= data.periodDuration) {
+      phase = '经期';
+      phaseEmoji = '🔴';
+      phaseColor = '#e53935';
+    } else if (cd <= Math.floor(data.cycleLength * 0.46)) {
+      phase = '卵泡期';
+      phaseEmoji = '🟢';
+      phaseColor = '#43a047';
+    } else if (cd <= Math.floor(data.cycleLength * 0.57)) {
+      phase = '排卵期';
+      phaseEmoji = '🟡';
+      phaseColor = '#fb8c00';
+    } else {
+      phase = '黄体期';
+      phaseEmoji = '🟣';
+      phaseColor = '#8e24aa';
+    }
+
+    const daysUntilNext = data.cycleLength - cd + 1;
+    const nextPeriodDate = new Date(today);
+    nextPeriodDate.setDate(nextPeriodDate.getDate() + daysUntilNext);
+
+    return { cycleDay: cd, phase, phaseEmoji, phaseColor,
+      daysUntilNext, nextPeriodDate: dateStr(nextPeriodDate),
+      totalDays: data.cycleLength, periodDuration: data.periodDuration,
+      lastPeriodStart: data.lastPeriodStart };
+  }
+
+  // ── Get advice based on phase ──
+  function getAdvice(phase) {
+    const adviceMap = {
+      '经期': [
+        { icon:'🥗', title:'饮食', text:'多吃<b>温热食物</b>（红糖姜茶、红枣桂圆汤、小米粥），补充<b>铁质</b>（瘦肉、菠菜、动物肝脏），多喝温水，少食多餐。' },
+        { icon:'🏃', title:'运动', text:'以<b>轻度运动</b>为主——散步、瑜伽拉伸、太极。避免剧烈运动和腹部挤压动作。经量多的几天尽量<b>多休息</b>。' },
+        { icon:'💆', title:'身体', text:'注意<b>腹部和腰部保暖</b>，可用暖宝宝或热水袋热敷缓解不适。保证<b>充足睡眠</b>（7-8小时），洗热水澡放松肌肉。' },
+        { icon:'😊', title:'情绪', text:'经期情绪波动是正常的生理现象。可以听<b>舒缓音乐</b>、看轻松的剧，适当吃些<b>黑巧克力</b>（含镁，有助缓解焦虑）。' },
+        { icon:'⚠️', title:'避免', text:'<b>生冷食物和冰饮</b>、辛辣刺激食物、咖啡因过量、熬夜、剧烈运动、重体力劳动。注意个人卫生，勤换卫生用品。' }
+      ],
+      '卵泡期': [
+        { icon:'🥗', title:'饮食', text:'补充<b>优质蛋白</b>（鱼虾、鸡蛋、豆制品），多吃新鲜蔬果补充维生素。身体代谢加快，注意<b>均衡营养</b>，可适当增加热量摄入。' },
+        { icon:'🏃', title:'运动', text:'精力充沛的<b>黄金运动期</b>！可安排有氧运动（跑步、游泳、跳操）、力量训练，运动效果和恢复速度都很好。' },
+        { icon:'💆', title:'身体', text:'身体状态处于<b>最佳期</b>，皮肤状态好、精力旺盛。适合安排重要会议、社交活动或新的挑战性任务。' },
+        { icon:'😊', title:'情绪', text:'雌激素上升带来<b>愉悦感和自信心</b>，情绪稳定积极。是沟通交流、表达情感的好时机 💕' },
+        { icon:'⚠️', title:'避免', text:'避免<b>过度节食</b>和极端减肥方案，保持规律作息即可。运动虽好但也不要过度训练导致疲劳。' }
+      ],
+      '排卵期': [
+        { icon:'🥗', title:'饮食', text:'饮食以<b>清淡为主</b>，多吃含<b>锌</b>的食物（坚果、海鲜、全谷物）和富含维生素C的水果。多喝水保持身体水分平衡。' },
+        { icon:'🏃', title:'运动', text:'可维持正常运动计划。部分人可能感到轻微腹部不适，可适当<b>降低强度</b>。推荐游泳、骑行等中等强度运动。' },
+        { icon:'💆', title:'身体', text:'部分人可能有<b>轻微排卵痛</b>（一侧下腹隐痛），属正常现象，一般持续数小时到1天。注意休息，可热敷缓解。' },
+        { icon:'😊', title:'情绪', text:'情绪和社交欲望处于<b>高峰期</b>，魅力值拉满 ✨ 适合约会、聚会，表达和沟通都特别顺畅。' },
+        { icon:'⚠️', title:'避免', text:'避免<b>过度疲劳</b>和暴饮暴食，保持规律作息。如有排卵期少量出血属正常，注意观察即可。' }
+      ],
+      '黄体期': [
+        { icon:'🥗', title:'饮食', text:'减少<b>盐分和糖分</b>摄入（防水肿），补充<b>维生素B6</b>（香蕉、坚果、全谷物）和镁（深绿蔬菜）。适量碳水有助稳定情绪。' },
+        { icon:'🏃', title:'运动', text:'适度运动可<b>缓解经前不适</b>，推荐瑜伽、普拉提、散步等低冲击运动。运动释放内啡肽有助改善情绪，但不要强迫自己。' },
+        { icon:'💆', title:'身体', text:'可能出现<b>经前综合征（PMS）</b>——乳房胀痛、水肿、便秘、疲劳等属正常现象。可按摩放松，泡脚促进循环。' },
+        { icon:'😊', title:'情绪', text:'可能<b>易焦虑烦躁或情绪低落</b>，这是孕激素影响，不是你的问题。尝试冥想、深呼吸、找人倾诉，<b>对自己温柔一点</b> 🫂' },
+        { icon:'⚠️', title:'避免', text:'<b>咖啡因和酒精</b>（加重焦虑和乳房胀痛）、高盐食物（加重水肿）、熬夜、过度压力。不要在这时候做重大决定。' }
+      ]
+    };
+    return adviceMap[phase] || adviceMap['经期'];
+  }
+
+  // ── Render period tracker ──
+  function renderPeriodTracker() {
+    let data = loadPeriodData();
+
+    // No data yet — show setup
+    if (!data || !data.lastPeriodStart) {
+      periodPhase.innerHTML = `
+        <div class="period-phase">
+          <span style="font-size:40px;display:block;margin-bottom:6px;">🌸</span>
+          <div class="pp-label">设置经期信息</div>
+          <div class="pp-sub">记录后为你提供护理建议</div>
+        </div>`;
+      periodActions.innerHTML = `
+        <button class="period-btn primary" onclick="document.getElementById('periodSetup').style.display='block';this.style.display='none';">📝 开始设置</button>`;
+      periodAdvice.innerHTML = '';
+      renderSetupForm();
+      return;
+    }
+
+    // Got data — calculate phase
+    const info = getPhaseInfo(data);
+    if (!info) {
+      // Cycle might have ended without recording new period — prompt
+      periodPhase.innerHTML = `
+        <div class="period-phase">
+          <span style="font-size:40px;display:block;margin-bottom:6px;">📅</span>
+          <div class="pp-label">需要更新</div>
+          <div class="pp-sub">上次经期：${data.lastPeriodStart}，已超过 ${data.cycleLength} 天</div>
+          <div class="pp-next">请记录最近的经期开始日期</div>
+        </div>`;
+      periodActions.innerHTML = `
+        <button class="period-btn primary" onclick="window._recordPeriodStart()">🔴 记录本次经期开始</button>`;
+      periodAdvice.innerHTML = '';
+      return;
+    }
+
+    // Render phase indicator
+    periodPhase.innerHTML = `
+      <div class="period-phase">
+        <div>
+          <span class="pp-dot" style="background:${info.phaseColor};"></span>
+          <span class="pp-label">${info.phaseEmoji} ${info.phase} · 第 ${info.cycleDay} 天</span>
+        </div>
+        <div class="pp-sub">
+          周期 ${info.totalDays} 天 · 经期持续 ${info.periodDuration} 天
+        </div>
+        <div class="pp-next">
+          📅 下次经期预计：<b>${info.nextPeriodDate}</b>（${info.daysUntilNext} 天后）
+        </div>
+      </div>`;
+
+    // Render actions
+    periodActions.innerHTML = `
+      <button class="period-btn primary" onclick="window._recordPeriodStart()">🔴 经期开始</button>
+      <button class="period-btn" onclick="document.getElementById('periodSetup').style.display=document.getElementById('periodSetup').style.display==='none'?'block':'none';">⚙️ 调整设置</button>`;
+
+    // Render advice
+    const advice = getAdvice(info.phase);
+    periodAdvice.innerHTML = `
+      <div class="period-advice-title">📋 ${info.phase}护理指南</div>
+      ${advice.map((a,i) => `
+        <div class="advice-item" style="animation-delay:${i*0.06}s">
+          <span class="ai-icon">${a.icon}</span>
+          <span class="ai-text"><strong>${a.title}：</strong>${a.text}</span>
+        </div>
+      `).join('')}`;
+
+    // Setup form (hidden unless toggled)
+    renderSetupForm();
+  }
+
+  // ── Setup form ──
+  function renderSetupForm() {
+    const data = loadPeriodData() || {};
+    periodSetup.innerHTML = `
+      <label>📅 最近一次经期开始日期</label>
+      <input type="date" id="psLastStart" value="${data.lastPeriodStart || ''}">
+      <label>🔄 月经周期（天）</label>
+      <input type="number" id="psCycleLen" value="${data.cycleLength || 28}" min="20" max="45" step="1">
+      <div class="hint">一般 28 天，21-35 天均属正常</div>
+      <label>🩸 经期持续天数</label>
+      <input type="number" id="psDuration" value="${data.periodDuration || 9}" min="2" max="10" step="1">
+      <div class="hint">一般 3-7 天</div>
+      <button class="period-btn primary" onclick="window._savePeriodSetup()">💾 保存设置</button>`;
+  }
+
+  // ── Global functions for onclick ──
+  window._recordPeriodStart = function() {
+    const data = loadPeriodData() || { cycleLength: 28, periodDuration: 9 };
+    const today = dateStr(new Date());
+
+    // Only record if different from last
+    if (data.lastPeriodStart === today) {
+      showToast('📅 今天已经记录过啦~');
+      return;
+    }
+
+    data.lastPeriodStart = today;
+    savePeriodData(data);
+    renderPeriodTracker();
+    showToast('✅ 已记录经期开始：' + today);
+  };
+
+  window._savePeriodSetup = function() {
+    const lastStart = document.getElementById('psLastStart').value;
+    const cycleLen  = parseInt(document.getElementById('psCycleLen').value) || 28;
+    const duration  = parseInt(document.getElementById('psDuration').value) || 5;
+
+    if (!lastStart) { showToast('📅 请选择经期开始日期'); return; }
+
+    const data = { lastPeriodStart: lastStart, cycleLength: cycleLen, periodDuration: duration };
+    savePeriodData(data);
+    periodSetup.style.display = 'none';
+    renderPeriodTracker();
+    showToast('💾 设置已保存~');
+  };
+
+  // ── Init ──
+  renderPeriodTracker();
+
+  // ══════════════════════════════════════
+  //  MESSAGE BOARD — Supabase cloud sync
+  // ══════════════════════════════════════
+
+  const msgList     = document.getElementById('msgList');
+  const msgInput    = document.getElementById('msgInput');
+  const msgNickname = document.getElementById('msgNickname');
+  const msgSendBtn  = document.getElementById('msgSendBtn');
+
+  // supabase declared globally above
+
+  // ── Toast ──
+  function showToast(text) {
+    const t = document.createElement('div');
+    t.className = 'toast'; t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 1800);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  // ── Relative time ──
+  function relativeTime(isoStr) {
+    const diff = Date.now() - new Date(isoStr).getTime();
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return '刚刚';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min + '分钟前';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + '小时前';
+    const day = Math.floor(hr / 24);
+    if (day < 30) return day + '天前';
+    const mon = Math.floor(day / 30);
+    return mon + '个月前';
+  }
+
+  const savedNick = localStorage.getItem('love_msg_nickname');
+  if (savedNick) msgNickname.value = savedNick;
+  msgNickname.addEventListener('change', () => {
+    localStorage.setItem('love_msg_nickname', msgNickname.value.trim());
+  });
+  msgNickname.addEventListener('blur', () => {
+    localStorage.setItem('love_msg_nickname', msgNickname.value.trim());
+  });
+
+  function createMsgEl(msg) {
+    const isMine = msgNickname.value.trim() && msgNickname.value.trim() === msg.sender;
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + (isMine ? 'mine' : 'theirs');
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.innerHTML = '<span class="msg-sender">' + escapeHtml(msg.sender) + '</span>'
+      + '<span class="msg-time">' + relativeTime(msg.created_at) + '</span>';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = msg.content;
+    row.appendChild(meta);
+    row.appendChild(bubble);
+    return row;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  let renderedIds = new Set();
+  function renderMessages(messages) {
+    const empty = msgList.querySelector('.msg-empty');
+    if (empty) empty.remove();
+    const loading = msgList.querySelector('.msg-loading');
+    if (loading) loading.remove();
+
+    if (!messages.length) {
+      const el = document.createElement('div');
+      el.className = 'msg-empty';
+      el.innerHTML = '<span class="big">📝</span>还没有留言<br>写下想对 ta 说的第一句话吧 💕';
+      msgList.appendChild(el);
+      return;
+    }
+
+    messages.forEach(msg => {
+      const idStr = String(msg.id);
+      if (renderedIds.has(idStr)) return;
+      const el = createMsgEl(msg);
+      el.dataset.msgId = idStr;
+      msgList.appendChild(el);
+      renderedIds.add(idStr);
+    });
+
+    const rows = msgList.querySelectorAll('.msg-row');
+    if (rows.length > 100) {
+      for (let i = 0; i < rows.length - 100; i++) {
+        renderedIds.delete(rows[i].dataset.msgId);
+        rows[i].remove();
+      }
+    }
+    msgList.scrollTop = msgList.scrollHeight;
+  }
+
+  // ── Handle send ──
+  async function handleSend() {
+    const content = msgInput.value.trim();
+    const sender  = msgNickname.value.trim();
+    if (!sender) { showToast('💬 先填一下昵称吧~'); msgNickname.focus(); return; }
+    if (!content) return;
+
+    if (!supabase) { showToast('🔧 请先配置 Supabase 密钥'); return; }
+
+    msgSendBtn.disabled = true;
+    msgSendBtn.textContent = '⏳';
+
+    const { error } = await supabase.from('love_messages').insert([{ sender, content }]);
+    if (error) {
+      showToast('😢 发送失败：' + error.message);
+    } else {
+      msgInput.value = '';
+    }
+
+    msgSendBtn.disabled = false;
+    msgSendBtn.textContent = '💗';
+    msgInput.focus();
+  }
+
+  msgSendBtn.addEventListener('click', handleSend);
+  msgInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  });
+
+  // ── Init ──
+  async function initMessageBoard() {
+    if (!supabase) {
+      msgList.innerHTML = '<div class="msg-empty"><span class="big">🔧</span>Supabase 未连接<br><small>请配置 SUPABASE_URL 和 SUPABASE_KEY</small></div>';
+      return;
+    }
+
+    msgList.innerHTML = '<div class="msg-empty msg-loading"><span class="big">⏳</span>加载留言中...</div>';
+    const { data: msgs, error } = await supabase.from('love_messages').select('*').order('created_at', { ascending: true }).limit(100);
+    if (error) { msgList.innerHTML = '<div class="msg-empty">😢 加载失败</div>'; return; }
+
+    msgList.innerHTML = '';
+    renderMessages(msgs || []);
+
+    supabase.channel('msg-channel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'love_messages' },
+        (payload) => { if (payload.new) renderMessages([payload.new]); })
+      .subscribe();
+
+    // Re-render diary now that Supabase is ready
+    renderCalendar();
+  }
+
+  initMessageBoard();
+
+  // ══════════════════════════════════════
+  //  BOTTOM NAVIGATION — Tab switching
+  // ══════════════════════════════════════
+
+  window.switchTab = function(targetId) {
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+    const target = document.getElementById(targetId);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(item => {
+      const match = item.getAttribute('onclick') && item.getAttribute('onclick').includes(targetId);
+      item.classList.toggle('active', match);
+    });
+  };
+
+  // ── Generate butterflies ──
+  const butterflyEmojis = ['🦋','🦋','🪻','🌸','🌷'];
+  const bfContainer = document.getElementById('butterfliesContainer');
+  for (let i = 0; i < 8; i++) {
+    const span = document.createElement('span');
+    span.className = 'butterfly';
+    span.textContent = butterflyEmojis[Math.floor(Math.random() * butterflyEmojis.length)];
+    span.style.setProperty('--bf-x', (5 + Math.random() * 88) + '%');
+    span.style.setProperty('--bf-y', (50 + Math.random() * 45) + '%');
+    span.style.setProperty('--bf-dur', (10 + Math.random() * 16) + 's');
+    span.style.setProperty('--bf-delay', (Math.random() * 12) + 's');
+    span.style.fontSize = (16 + Math.random() * 18) + 'px';
+    bfContainer.appendChild(span);
+  }
+})();
+</script>
+
+<!-- ══════════════════════════════════════
+     BOTTOM NAVIGATION
+     ══════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="nav-item active" onclick="switchTab('cardLove')">
+    <span class="nav-icon">💕</span>
+    <span class="nav-label">小时光</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('cardWeather')">
+    <span class="nav-icon">🌤️</span>
+    <span class="nav-label">天气</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('cardDiary')">
+    <span class="nav-icon">📔</span>
+    <span class="nav-label">日记</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('cardPeriod')">
+    <span class="nav-icon">📅</span>
+    <span class="nav-label">经期</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('cardMessages')">
+    <span class="nav-icon">💌</span>
+    <span class="nav-label">留言</span>
+  </div>
+</nav>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
