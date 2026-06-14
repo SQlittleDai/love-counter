@@ -176,7 +176,8 @@
       <div class="visit-item">
         <div class="avatar">${avatarChar(v.nickname)}</div>
         <div class="info">
-          <div class="name">${escapeHtml(v.nickname)}</div>
+          <div class="name">${escapeHtml(v.nickname)}${v.ip ? ' <span style="font-size:10px;color:var(--text-soft)">IP: '+escapeHtml(v.ip)+'</span>' : ''}</div>
+          ${v.location_info ? '<div class="time">📍 '+escapeHtml(v.location_info)+'</div>' : ''}
           <div class="time">${timeAgo(v.visited_at)}</div>
         </div>
       </div>
